@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ResumeFlow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fraunces:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<div id="auth-page">
+  <div class="auth-box">
+    <div class="auth-logo">Resume<span>Flow</span></div>
+    <p class="auth-tagline">Build a resume that gets you hired</p>
+    <div class="tab-btns">
+      <button class="tab-btn active" onclick="switchAuth('login')">Sign In</button>
+      <button class="tab-btn" onclick="switchAuth('register')">Register</button>
+    </div>
+    <div id="auth-msg"></div>
+    <div id="login-form">
+      <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="your@email.com"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••"/></div>
+      <button class="btn" onclick="login()">Sign In</button>
+    </div>
+    <div id="register-form" class="hidden">
+      <div class="form-group"><label>Full Name</label><input type="text" id="reg-name" placeholder="Kundyz Abibulla"/></div>
+      <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="your@email.com"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="reg-pass" placeholder="Min 6 characters"/></div>
+      <button class="btn" onclick="register()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+  <nav class="navbar">
+    <div class="nav-logo">Resume<span>Flow</span></div>
+    <div class="nav-links">
+      <button class="nav-link active" onclick="showPage('dashboard', this)">Dashboard</button>
+      <button class="nav-link" onclick="showPage('builder', this)">My Resumes</button>
+      <button class="nav-link" onclick="showPage('ai', this)">AI Assistant</button>
+      <button class="nav-link" onclick="showPage('feedback', this)">Feedback</button>
+      <button class="nav-link" onclick="showPage('profile', this)">Profile</button>
+    </div>
+    <div class="nav-right">
+      <div class="avatar" id="nav-avatar">U</div>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="page active" id="page-dashboard">
+    <div class="page-title">Welcome back, <span id="dash-name">User</span>!</div>
+    <p class="page-sub">Here's your resume progress at a glance</p>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num" id="stat-resumes">0</div><div class="stat-label">Resumes Created</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-feedback">0</div><div class="stat-label">Feedback Received</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-ai">0</div><div class="stat-label">AI Conversations</div></div>
+      <div class="stat-card"><div class="stat-num">5</div><div class="stat-label">Features Available</div></div>
+    </div>
+    <div class="section-title">Quick Actions</div>
+    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:32px;">
+      <button class="btn sm" onclick="showPage('builder',null); openNewResume()">+ New Resume</button>
+      <button class="btn sm secondary" onclick="showPage('ai',null)">Ask AI</button>
+      <button class="btn sm secondary" onclick="showPage('feedback',null)">Feedback</button>
+    </div>
+    <div class="section-title">Recent Resumes</div>
+    <div id="dash-recent"></div>
+  </div>
+
+  <div class="page" id="page-builder">
+    <div id="builder-list-view">
+      <div class="page-title">My Resumes</div>
+      <p class="page-sub">Create and manage your resume versions</p>
+      <div class="resume-grid" id="resume-grid"></div>
+    </div>
+    <div id="builder-editor-view" class="hidden">
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px; flex-wrap:wrap;">
+        <button class="btn sm secondary" onclick="backToList()">← Back</button>
+        <div>
+          <div class="page-title" style="font-size:24px; margin-bottom:0;" id="editor-title">Edit Resume</div>
+          <p style="color:var(--text2); font-size:13px;">Fill in the sections and see live preview</p>
+        </div>
+        <button class="btn sm success" style="margin-left:auto;" onclick="saveResume()">Save</button>
+      </div>
+      <div class="editor-layout">
+        <div class="editor-panel">
+          <div class="editor-section-title">Personal Info</div>
+          <div class="form-group"><label>Full Name</label><input id="e-name" placeholder="Kundyz Abibulla" oninput="updatePreview()"/></div>
+          <div class="form-group"><label>Job Title</label><input id="e-title" placeholder="Software Developer" oninput="updatePreview()"/></div>
+          <div class="form-group"><label>Email</label><input id="e-email" placeholder="email@example.com" oninput="updatePreview()"/></div>
+          <div class="form-group"><label>Phone</label><input id="e-phone" placeholder="+7 777 000 0000" oninput="updatePreview()"/></div>
+          <div class="form-group"><label>Location</label><input id="e-location" placeholder="Almaty, Kazakhstan" oninput="updatePreview()"/></div>
+          <div class="form-group"><label>LinkedIn / Portfolio</label><input id="e-link" placeholder="linkedin.com/in/yourname" oninput="updatePreview()"/></div>
+          <div class="editor-section-title">Summary</div>
+          <div class="form-group"><textarea id="e-summary" rows="3" placeholder="A brief professional summary..." oninput="updatePreview()"></textarea></div>
+          <div class="editor-section-title">Education</div>
+          <div class="form-group"><label>University</label><input id="e-uni" placeholder="KBTU" oninput="updatePreview()"/></div>
+          <div class="form-group"><label>Degree & Major</label><input id="e-degree" placeholder="Bachelor of Information Systems" oninput="updatePreview()"/></div>
+          <div class="form-group"><label>Years</label><input id="e-years" placeholder="2021 – 2025" oninput="updatePreview()"/></div>
+          <div class="form-group"><label>GPA (optional)</label><input id="e-gpa" placeholder="3.8/4.0" oninput="updatePreview()"/></div>
+          <div class="editor-section-title">Work Experience</div>
+          <div class="form-group"><label>Company & Role</label><input id="e-job1" placeholder="Company — Position" oninput="updatePreview()"/></div>
+          <div class="form-group"><label>Period</label><input id="e-job1-dates" placeholder="Jun 2023 – Aug 2023" oninput="updatePreview()"/></div>
+          <div class="form-group"><label>Responsibilities</label><textarea id="e-job1-desc" rows="3" placeholder="Describe your responsibilities..." oninput="updatePreview()"></textarea></div>
+          <div class="editor-section-title">Skills</div>
+          <div class="form-group"><label>Skills (comma separated)</label><input id="e-skills" placeholder="Python, SQL, Figma, Excel" oninput="updatePreview()"/></div>
+          <div class="editor-section-title">Languages</div>
+          <div class="form-group"><textarea id="e-langs" rows="2" placeholder="Kazakh (Native), English (B2)" oninput="updatePreview()"></textarea></div>
+          <div class="editor-section-title">Certifications</div>
+          <div class="form-group"><textarea id="e-certs" rows="2" placeholder="Google Data Analytics Certificate, 2024" oninput="updatePreview()"></textarea></div>
+          <button class="btn secondary" style="margin-top:8px;" onclick="shareResume()">📤 Share for Feedback</button>
+        </div>
+        <div>
+          <div class="section-title">Live Preview</div>
+          <div class="resume-preview" id="resume-preview">
+            <p style="color:#aaa; text-align:center; padding:40px 0;">Start filling in the form to see preview</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-ai">
+    <div class="page-title">AI Resume Assistant</div>
+    <p class="page-sub">Get personalized advice to improve your resume</p>
+    <div class="ai-layout">
+      <div class="chat-box">
+        <div class="chat-messages" id="chat-messages">
+          <div class="chat-msg ai">
+            <div class="sender">✨ ResumeFlow AI</div>
+            Hello! I'm your AI resume assistant. I can help you write stronger summaries, improve your work experience, suggest skills, and give feedback. What would you like to work on?
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <input class="chat-input" id="chat-input" placeholder="Ask anything about your resume..." onkeydown="if(event.key==='Enter') sendMessage()"/>
+          <button class="send-btn" id="send-btn" onclick="sendMessage()">Send</button>
+        </div>
+      </div>
+      <div class="ai-tips">
+        <div class="section-title">Quick Prompts</div>
+        <div class="tip-chip" onclick="setPrompt('How do I write a strong professional summary with no work experience?')">💡 Summary with no experience</div>
+        <div class="tip-chip" onclick="setPrompt('What skills should a junior software developer include on their resume?')">💻 Skills for junior developer</div>
+        <div class="tip-chip" onclick="setPrompt('How do I describe my internship experience to impress employers?')">📋 Describe internship</div>
+        <div class="tip-chip" onclick="setPrompt('What are the most common resume mistakes students make?')">⚠️ Common mistakes</div>
+        <div class="tip-chip" onclick="setPrompt('How do I tailor my resume for different job positions?')">🎯 Tailor resume for a job</div>
+        <div class="tip-chip" onclick="setPrompt('How long should a student resume be and what must it include?')">📏 Resume length & structure</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-feedback">
+    <div class="page-title">Peer Feedback</div>
+    <p class="page-sub">Share your resume and get feedback from other users</p>
+    <div class="feedback-layout">
+      <div>
+        <div class="section-title">My Shared Resumes & Feedback</div>
+        <div id="shared-resumes-list"></div>
+      </div>
+      <div>
+        <div class="section-title">Leave Feedback</div>
+        <div class="editor-panel">
+          <div class="form-group">
+            <label>Select Resume to Review</label>
+            <select id="feedback-resume-select" onchange="previewSelectedResume()">
+              <option value="">— Choose a shared resume —</option>
+            </select>
+          </div>
+          <div id="selected-resume-preview" class="hidden" style="margin-bottom:16px;">
+            <div style="font-size:12px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Resume Preview</div>
+            <div id="selected-resume-content" style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:16px; font-size:13px; line-height:1.7; color:var(--text2);"></div>
+          </div>
+          <div class="form-group">
+            <label>Section</label>
+            <select id="feedback-section">
+              <option value="Overall">Overall Resume</option>
+              <option value="Summary">Summary</option>
+              <option value="Work Experience">Work Experience</option>
+              <option value="Education">Education</option>
+              <option value="Skills">Skills</option>
+              <option value="Design/Format">Design / Format</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Rating</label>
+            <select id="feedback-rating">
+              <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+              <option value="4">⭐⭐⭐⭐ Good</option>
+              <option value="3">⭐⭐⭐ Average</option>
+              <option value="2">⭐⭐ Needs Work</option>
+              <option value="1">⭐ Poor</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Your Feedback (min 20 characters)</label>
+            <textarea id="feedback-text" rows="4" placeholder="Be constructive and specific..."></textarea>
+          </div>
+          <div id="feedback-msg"></div>
+          <button class="btn" onclick="submitFeedback()">Submit Feedback</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-profile">
+    <div class="page-title">My Profile</div>
+    <p class="page-sub">Manage your account settings</p>
+    <div class="profile-layout">
+      <div class="profile-card">
+        <div class="profile-avatar" id="profile-avatar">U</div>
+        <div class="profile-name" id="profile-name">User</div>
+        <div class="profile-email" id="profile-email">user@email.com</div>
+        <hr style="border:none; border-top:1px solid var(--border); margin:16px 0;"/>
+        <div class="profile-stat">Resumes <span id="ps-resumes">0</span></div>
+        <div class="profile-stat">Feedback Given <span id="ps-given">0</span></div>
+        <div class="profile-stat">Feedback Received <span id="ps-received">0</span></div>
+        <div class="profile-stat">AI Chats <span id="ps-ai">0</span></div>
+      </div>
+      <div class="editor-panel">
+        <div class="section-title">Edit Profile</div>
+        <div class="form-group"><label>Full Name</label><input id="set-name" placeholder="Your full name"/></div>
+        <div class="form-group"><label>University</label><input id="set-uni" placeholder="KBTU"/></div>
+        <div class="form-group"><label>Major</label><input id="set-major" placeholder="Information Systems"/></div>
+        <div class="form-group">
+          <label>Year of Study</label>
+          <select id="set-year">
+            <option>1st year</option><option>2nd year</option>
+            <option>3rd year</option><option>4th year</option><option>Graduate</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Bio (optional)</label><textarea id="set-bio" rows="3" placeholder="Tell others about yourself..."></textarea></div>
+        <button class="btn" onclick="saveProfile()">Save Changes</button>
+        <div id="profile-msg" style="margin-top:12px;"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAQcWzfqmn2nNyk1jDxjtOyf-nyZqlZmdM",
+    authDomain: "resumeflow-ac0be.firebaseapp.com",
+    projectId: "resumeflow-ac0be",
+    storageBucket: "resumeflow-ac0be.firebasestorage.app",
+    messagingSenderId: "968960611170",
+    appId: "1:968960611170:web:ac920a441f67f22a6ed23b",
+    measurementId: "G-YQT8SYB85X"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const db   = getFirestore(app);
+  const auth = getAuth(app);
+
+  let currentUser = null;
+  let sharedResumesCache = [];
+
+  // auth state
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      currentUser = snap.exists() ? { uid: user.uid, ...snap.data() } : { uid: user.uid, email: user.email, name: 'User', aiChats: 0 };
+      initApp();
+    }
+  });
+
+  // switch auth tab
+  window.switchAuth = function(mode) {
+    document.getElementById('login-form').classList.toggle('hidden', mode !== 'login');
+    document.getElementById('register-form').classList.toggle('hidden', mode !== 'register');
+    document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', (mode==='login'&&i===0)||(mode==='register'&&i===1)));
+    document.getElementById('auth-msg').innerHTML = '';
+  };
+
+  function showAuthMsg(text, type) {
+    document.getElementById('auth-msg').innerHTML = `<div class="msg ${type}">${text}</div>`;
+  }
+
+  // register
+  window.register = async function() {
+    const name  = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const pass  = document.getElementById('reg-pass').value;
+    if (!name || !email || !pass) return showAuthMsg('Please fill in all fields', 'error');
+    if (pass.length < 6) return showAuthMsg('Password must be at least 6 characters', 'error');
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      await setDoc(doc(db, 'users', cred.user.uid), { name, email, aiChats: 0, uni: '', major: '', year: '3rd year', bio: '', createdAt: new Date().toISOString() });
+      showAuthMsg('Account created! Signing you in...', 'success');
+      document.getElementById('reg-name').value = '';
+      document.getElementById('reg-email').value = '';
+      document.getElementById('reg-pass').value = '';
+    } catch (e) {
+      showAuthMsg(e.code === 'auth/email-already-in-use' ? 'Email already registered' : e.message, 'error');
+    }
+  };
+
+  // login
+  window.login = async function() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass  = document.getElementById('login-pass').value;
+    if (!email || !pass) return showAuthMsg('Please enter email and password', 'error');
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch (e) {
+      showAuthMsg('Invalid email or password', 'error');
+    }
+  };
+
+  // logout
+  window.logout = async function() {
+    await signOut(auth);
+    currentUser = null;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('auth-page').style.display = 'flex';
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-pass').value = '';
+    document.getElementById('reg-name').value = '';
+    document.getElementById('reg-email').value = '';
+    document.getElementById('reg-pass').value = '';
+  };
+
+  // init app
+  function initApp() {
+    document.getElementById('auth-page').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    const initials = currentUser.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    document.getElementById('nav-avatar').textContent     = initials;
+    document.getElementById('dash-name').textContent      = currentUser.name.split(' ')[0];
+    document.getElementById('profile-avatar').textContent = initials;
+    document.getElementById('profile-name').textContent   = currentUser.name;
+    document.getElementById('profile-email').textContent  = currentUser.email;
+    document.getElementById('set-name').value  = currentUser.name  || '';
+    document.getElementById('set-uni').value   = currentUser.uni   || '';
+    document.getElementById('set-major').value = currentUser.major || '';
+    document.getElementById('set-bio').value   = currentUser.bio   || '';
+    updateDashboard();
+  }
+
+  // pages
+  window.showPage = function(id, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    if (btn) btn.classList.add('active');
+    if (id === 'builder')   { renderResumeGrid(); backToList(); }
+    if (id === 'feedback')  loadFeedbackPage();
+    if (id === 'profile')   loadProfileStats();
+    if (id === 'dashboard') updateDashboard();
+  };
+
+  // dashboard
+  async function updateDashboard() {
+    const resumeSnap   = await getDocs(query(collection(db, 'resumes'), where('owner', '==', currentUser.uid)));
+    const feedbackSnap = await getDocs(query(collection(db, 'feedback'), where('toUser', '==', currentUser.uid)));
+    document.getElementById('stat-resumes').textContent  = resumeSnap.size;
+    document.getElementById('stat-feedback').textContent = feedbackSnap.size;
+    document.getElementById('stat-ai').textContent       = currentUser.aiChats || 0;
+    const recent = document.getElementById('dash-recent');
+    if (resumeSnap.empty) {
+      recent.innerHTML = `<div class="empty-state"><div class="empty-icon">📄</div><p>No resumes yet. Create your first one!</p></div>`;
+      return;
+    }
+    const resumes = resumeSnap.docs.map(d => ({ id: d.id, ...d.data() })).slice(0, 3);
+    recent.innerHTML = resumes.map(r => `
+      <div class="resume-card" style="margin-bottom:12px;">
+        <div class="badge">Resume</div>
+        <div class="resume-card-title">${r.title || 'Untitled Resume'}</div>
+        <div class="resume-card-date">Updated: ${new Date(r.updatedAt).toLocaleDateString()}</div>
+        <div class="resume-card-actions">
+          <button class="btn sm" onclick="goEditResume('${r.id}')">Edit</button>
+        </div>
+      </div>`).join('');
+  }
+
+  // go to editor from dashboard
+  window.goEditResume = function(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    document.getElementById('page-builder').classList.add('active');
+    document.querySelectorAll('.nav-link')[1].classList.add('active');
+    window.editResume(id);
+  };
+
+  // resume builder
+  let currentResumeId = null;
+  const resumeFields = ['name','title','email','phone','location','link','summary','uni','degree','years','gpa','job1','job1-dates','job1-desc','skills','langs','certs'];
+
+  async function renderResumeGrid() {
+    const snap = await getDocs(query(collection(db, 'resumes'), where('owner', '==', currentUser.uid)));
+    const grid = document.getElementById('resume-grid');
+    const resumes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    grid.innerHTML = resumes.map(r => `
+      <div class="resume-card">
+        <div class="badge">Resume</div>
+        <div class="resume-card-title">${r.title || 'Untitled Resume'}</div>
+        <div class="resume-card-date">Updated: ${new Date(r.updatedAt).toLocaleDateString()}</div>
+        <div class="resume-card-actions">
+          <button class="btn sm" onclick="editResume('${r.id}')">Edit</button>
+          <button class="btn sm danger" onclick="deleteResume('${r.id}')">Delete</button>
+        </div>
+      </div>`).join('') +
+      `<div class="add-card" onclick="openNewResume()"><div class="plus">+</div><div>New Resume</div></div>`;
+  }
+
+  window.openNewResume = function() {
+    currentResumeId = null;
+    document.getElementById('editor-title').textContent = 'New Resume';
+    resumeFields.forEach(f => { const el = document.getElementById('e-' + f); if (el) el.value = ''; });
+    updatePreview();
+    document.getElementById('builder-list-view').classList.add('hidden');
+    document.getElementById('builder-editor-view').classList.remove('hidden');
+  };
+
+  window.editResume = async function(id) {
+    const snap = await getDoc(doc(db, 'resumes', id));
+    if (!snap.exists()) return;
+    const r = snap.data();
+    currentResumeId = id;
+    document.getElementById('editor-title').textContent = r.title || 'Edit Resume';
+    resumeFields.forEach(f => { const el = document.getElementById('e-' + f); if (el) el.value = r.data?.[f] || ''; });
+    updatePreview();
+    document.getElementById('builder-list-view').classList.add('hidden');
+    document.getElementById('builder-editor-view').classList.remove('hidden');
+  };
+
+  window.backToList = function() {
+    document.getElementById('builder-list-view').classList.remove('hidden');
+    document.getElementById('builder-editor-view').classList.add('hidden');
+    renderResumeGrid();
+  };
+
+  window.saveResume = async function() {
+    const data = {};
+    resumeFields.forEach(f => { const el = document.getElementById('e-' + f); if (el) data[f] = el.value; });
+    const id = currentResumeId || doc(collection(db, 'resumes')).id;
+    currentResumeId = id;
+    await setDoc(doc(db, 'resumes', id), {
+      owner: currentUser.uid,
+      title: data.name ? data.name + "'s Resume" : 'Untitled Resume',
+      data,
+      shared: false,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+    alert('Resume saved successfully!');
+    updateDashboard();
+  };
+
+  window.deleteResume = async function(id) {
+    if (!confirm('Delete this resume?')) return;
+    await deleteDoc(doc(db, 'resumes', id));
+    renderResumeGrid();
+    updateDashboard();
+  };
+
+  window.shareResume = async function() {
+    if (!currentResumeId) return alert('Save your resume first!');
+    await setDoc(doc(db, 'resumes', currentResumeId), { shared: true }, { merge: true });
+    alert('Resume shared! Others can now give you feedback.');
+  };
+
+  window.updatePreview = function() {
+    const g = id => document.getElementById('e-' + id)?.value?.trim() || '';
+    const name = g('name');
+    if (!name) {
+      document.getElementById('resume-preview').innerHTML = '<p style="color:#aaa; text-align:center; padding:40px 0;">Start filling in the form to see preview</p>';
+      return;
+    }
+    const skillTags = g('skills') ? g('skills').split(',').map(s => `<span class="skill-tag">${s.trim()}</span>`).join('') : '';
+    document.getElementById('resume-preview').innerHTML = `
+      <div class="preview-name">${name}</div>
+      ${g('title') ? `<div class="preview-jobtitle">${g('title')}</div>` : ''}
+      <div class="preview-contact">${[g('email'),g('phone'),g('location'),g('link')].filter(Boolean).join(' · ')}</div>
+      ${g('summary') ? `<div class="preview-section"><h3>Summary</h3><p>${g('summary')}</p></div>` : ''}
+      ${g('uni') ? `<div class="preview-section"><h3>Education</h3><p><strong>${g('uni')}</strong>${g('degree') ? ' — '+g('degree') : ''}${g('years') ? ', '+g('years') : ''}${g('gpa') ? ' · GPA: '+g('gpa') : ''}</p></div>` : ''}
+      ${g('job1') ? `<div class="preview-section"><h3>Experience</h3><p><strong>${g('job1')}</strong>${g('job1-dates') ? ' · '+g('job1-dates') : ''}</p>${g('job1-desc') ? `<p style="margin-top:4px;">${g('job1-desc')}</p>` : ''}</div>` : ''}
+      ${g('skills') ? `<div class="preview-section"><h3>Skills</h3><div class="skills-tags">${skillTags}</div></div>` : ''}
+      ${g('langs') ? `<div class="preview-section"><h3>Languages</h3><p>${g('langs')}</p></div>` : ''}
+      ${g('certs') ? `<div class="preview-section"><h3>Certifications</h3><p>${g('certs')}</p></div>` : ''}
+    `;
+  };
+
+  // ai assistant
+  const SYSTEM_PROMPT = `You are ResumeFlow AI, an expert resume coach helping students in Kazakhstan. Give specific, actionable advice. Be encouraging but honest. Keep responses under 200 words.`;
+  let chatHistory = [];
+
+  window.sendMessage = async function() {
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+    input.value = '';
+    appendChat(msg, 'user');
+    chatHistory.push({ role: 'user', content: msg });
+    const btn = document.getElementById('send-btn');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+    const thinking = appendChat('Thinking...', 'ai');
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': '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',
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 1000, system: SYSTEM_PROMPT, messages: chatHistory })
+      });
+      const data = await res.json();
+      const reply = data.content?.[0]?.text || 'Sorry, something went wrong.';
+      thinking.remove();
+      appendChat(reply, 'ai');
+      chatHistory.push({ role: 'assistant', content: reply });
+      currentUser.aiChats = (currentUser.aiChats || 0) + 1;
+      await setDoc(doc(db, 'users', currentUser.uid), { aiChats: currentUser.aiChats }, { merge: true });
+      document.getElementById('stat-ai').textContent = currentUser.aiChats;
+    } catch (e) {
+      thinking.remove();
+      appendChat(' Connection error. Check your internet and try again.', 'ai');
+    }
+    btn.disabled = false; btn.innerHTML = 'Send';
+  };
+
+  function appendChat(text, role) {
+    const box = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg ' + role;
+    div.innerHTML = role === 'ai' ? `<div class="sender">✨ ResumeFlow AI</div>${text}` : '';
+    if (role === 'user') div.textContent = text;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+    return div;
+  }
+
+  window.setPrompt = function(text) {
+    document.getElementById('chat-input').value = text;
+    document.getElementById('chat-input').focus();
+  };
+
+  // feedback
+  async function loadFeedbackPage() {
+    const sharedSnap = await getDocs(query(collection(db, 'resumes'), where('shared', '==', true)));
+    const allShared  = sharedSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    sharedResumesCache = allShared;
+
+    const others = allShared.filter(r => r.owner !== currentUser.uid);
+    const select = document.getElementById('feedback-resume-select');
+    select.innerHTML = '<option value="">— Choose a shared resume —</option>' +
+      others.map(r => `<option value="${r.id}">${r.data?.name || 'User'}'s Resume</option>`).join('');
+
+    document.getElementById('selected-resume-preview').classList.add('hidden');
+
+    const myShared = allShared.filter(r => r.owner === currentUser.uid);
+    const list = document.getElementById('shared-resumes-list');
+    if (myShared.length === 0) {
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">📤</div><p>No shared resumes yet.<br/>Go to My Resumes → click "Share for Feedback"</p></div>`;
+    } else {
+      let html = '';
+      for (const r of myShared) {
+        const fbSnap = await getDocs(query(collection(db, 'feedback'), where('resumeId', '==', r.id)));
+        const fbs    = fbSnap.docs.map(d => d.data());
+        html += `<div class="feedback-card">
+          <div class="resume-card-title">${r.title || 'Untitled Resume'}</div>
+          <div class="resume-card-date" style="margin-bottom:${fbs.length?'12px':'0'};">Shared · ${fbs.length} feedback(s)</div>
+          ${fbs.map(f => `
+            <div style="border-top:1px solid var(--border); padding-top:12px; margin-top:8px;">
+              <div class="feedback-card-header">
+                <div class="feedback-avatar">${f.fromName[0].toUpperCase()}</div>
+                <div><div class="feedback-user">${f.fromName}</div><div class="feedback-date">${new Date(f.createdAt).toLocaleDateString()}</div></div>
+              </div>
+              <div class="stars">${'⭐'.repeat(f.rating)}</div>
+              <div class="feedback-section-tag">${f.section}</div>
+              <div class="feedback-text" style="margin-top:6px;">${f.text}</div>
+            </div>`).join('')}
+        </div>`;
+      }
+      list.innerHTML = html;
+    }
+  }
+
+  // preview selected resume
+  window.previewSelectedResume = function() {
+    const id = document.getElementById('feedback-resume-select').value;
+    const previewBox = document.getElementById('selected-resume-preview');
+    const content    = document.getElementById('selected-resume-content');
+
+    if (!id) { previewBox.classList.add('hidden'); return; }
+
+    const r = sharedResumesCache.find(x => x.id === id);
+    if (!r || !r.data) { previewBox.classList.add('hidden'); return; }
+
+    const d = r.data;
+    const lines = [];
+    if (d.name)       lines.push(`<strong> ${d.name}</strong>${d.title ? ' — ' + d.title : ''}`);
+    if (d.email || d.phone || d.location) lines.push(` ${[d.email, d.phone, d.location].filter(Boolean).join(' · ')}`);
+    if (d.summary)    lines.push(`<br/><em>${d.summary}</em>`);
+    if (d.uni)        lines.push(`<br/> <strong>Education:</strong> ${d.uni}${d.degree ? ', ' + d.degree : ''}${d.years ? ' ('+d.years+')' : ''}`);
+    if (d.job1)       lines.push(` <strong>Experience:</strong> ${d.job1}${d['job1-dates'] ? ' · '+d['job1-dates'] : ''}`);
+    if (d['job1-desc']) lines.push(`<span style="padding-left:16px; color:var(--text2);">${d['job1-desc']}</span>`);
+    if (d.skills)     lines.push(` <strong>Skills:</strong> ${d.skills}`);
+    if (d.langs)      lines.push(` <strong>Languages:</strong> ${d.langs}`);
+    if (d.certs)      lines.push(` <strong>Certifications:</strong> ${d.certs}`);
+
+    content.innerHTML = lines.join('<br/>');
+    previewBox.classList.remove('hidden');
+  };
+
+  window.submitFeedback = async function() {
+    const resumeId = document.getElementById('feedback-resume-select').value;
+    const section  = document.getElementById('feedback-section').value;
+    const rating   = parseInt(document.getElementById('feedback-rating').value);
+    const text     = document.getElementById('feedback-text').value.trim();
+    const msgEl    = document.getElementById('feedback-msg');
+    if (!resumeId) { msgEl.innerHTML = '<div class="msg error">Please select a resume</div>'; return; }
+    if (text.length < 20) { msgEl.innerHTML = '<div class="msg error">Please write at least 20 characters</div>'; return; }
+    const resumeSnap = await getDoc(doc(db, 'resumes', resumeId));
+    if (!resumeSnap.exists()) return;
+    const resume = resumeSnap.data();
+    const fbId = 'fb_' + Date.now();
+    await setDoc(doc(db, 'feedback', fbId), {
+      resumeId, toUser: resume.owner,
+      fromUser: currentUser.uid, fromName: currentUser.name,
+      section, rating, text, createdAt: new Date().toISOString()
+    });
+    document.getElementById('feedback-text').value = '';
+    document.getElementById('feedback-resume-select').value = '';
+    document.getElementById('selected-resume-preview').classList.add('hidden');
+    msgEl.innerHTML = '<div class="msg success"> Feedback submitted!</div>';
+    setTimeout(() => { msgEl.innerHTML = ''; }, 3000);
+    loadFeedbackPage();
+    updateDashboard();
+  };
+
+  // profile
+  async function loadProfileStats() {
+    const resumeSnap   = await getDocs(query(collection(db, 'resumes'), where('owner', '==', currentUser.uid)));
+    const givenSnap    = await getDocs(query(collection(db, 'feedback'), where('fromUser', '==', currentUser.uid)));
+    const receivedSnap = await getDocs(query(collection(db, 'feedback'), where('toUser', '==', currentUser.uid)));
+    document.getElementById('ps-resumes').textContent  = resumeSnap.size;
+    document.getElementById('ps-given').textContent    = givenSnap.size;
+    document.getElementById('ps-received').textContent = receivedSnap.size;
+    document.getElementById('ps-ai').textContent       = currentUser.aiChats || 0;
+  }
+
+  window.saveProfile = async function() {
+    const name  = document.getElementById('set-name').value.trim();
+    const uni   = document.getElementById('set-uni').value.trim();
+    const major = document.getElementById('set-major').value.trim();
+    const year  = document.getElementById('set-year').value;
+    const bio   = document.getElementById('set-bio').value.trim();
+    const msgEl = document.getElementById('profile-msg');
+    if (!name) { msgEl.innerHTML = '<div class="msg error">Name cannot be empty</div>'; return; }
+    await setDoc(doc(db, 'users', currentUser.uid), { name, uni, major, year, bio }, { merge: true });
+    currentUser = { ...currentUser, name, uni, major, year, bio };
+    const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    document.getElementById('profile-avatar').textContent = initials;
+    document.getElementById('profile-name').textContent   = name;
+    document.getElementById('nav-avatar').textContent     = initials;
+    document.getElementById('dash-name').textContent      = name.split(' ')[0];
+    msgEl.innerHTML = '<div class="msg success"> Profile updated!</div>';
+    setTimeout(() => { msgEl.innerHTML = ''; }, 3000);
+  };
+
+  window.loadFeedbackPage = loadFeedbackPage;
+  window.loadProfileStats = loadProfileStats;
+  window.updateDashboard  = updateDashboard;
+  window.renderResumeGrid = renderResumeGrid;
+</script>
+
+</body>
+</html>
